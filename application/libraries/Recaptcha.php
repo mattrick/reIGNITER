@@ -8,34 +8,39 @@ require("recaptchalib.php");
 
 class Recaptcha
 {
-	public function get_code($lang = '', $theme = '')
+	public function get_code()
 	{
 		$CI =& get_instance();
 		$CI->config->load('recaptcha');
 		
 		$config = array_merge(array("lang" => "en", "theme" => ""), $CI->config->item('recaptcha'));
-		if (is_array($lang))
-		{
-			foreach ($lang as $key => $value)
-			{
-				$$key = $value;
-			}
-		}
-		
-		if (!empty($lang))
-			$config["lang"] = $lang;
-			
-		if (!empty($theme))
-			$config["theme"] = $theme;
 		
 		$settings = 	'<script type="text/javascript">'
 					. 	'var RecaptchaOptions = {'
-					.	(!empty($config["lang"]) ? "lang: '" . $config["lang"] . "'," : '')
-					.	(!empty($config["theme"]) ? "theme: '" . $config["theme"] . "'," : '')
+					.	(!empty($config["lang"]) ? "lang: '" . $config["lang"] . "'," : "")
+					.	(!empty($config["theme"]) ? "theme: '" . $config["theme"] . "'" : "")
 					.	'};'
 					.	'</script>';
 		
 		return $settings . recaptcha_get_html($config["public_key"]);
+	}
+	
+	public function get_custom_code()
+	{
+		$CI =& get_instance();
+		$CI->config->load('recaptcha');
+		
+		$config = array_merge(array("lang" => "en"), $CI->config->item('recaptcha'));
+		
+		$settings = 	'<script type="text/javascript">'
+					. 	'var RecaptchaOptions = {'
+					.	(!empty($config["lang"]) ? "lang: '" . $config["lang"] . "'," : "")
+					.	"theme: 'custom',"
+					.	(!empty($config["custom_theme_widget"]) ? "custom_theme_widget: '" . $config["custom_theme_widget"] . "'" : "")
+					.	'};'
+					.	'</script>';
+		
+		return $settings . $CI->load->view($config["custom_view"], array("public_key" => $config["public_key"]), true);
 	}
 	
 	public function get_answer($challenge, $response)
